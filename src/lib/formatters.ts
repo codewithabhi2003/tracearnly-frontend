@@ -1,5 +1,6 @@
 export function formatCurrency(amount: string | number): string {
   const n = typeof amount === "string" ? parseFloat(amount) : amount;
+
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
@@ -9,6 +10,7 @@ export function formatCurrency(amount: string | number): string {
 
 export function formatDate(iso: string): string {
   const d = new Date(iso);
+
   return d.toLocaleDateString("en-IN", {
     year: "numeric",
     month: "short",

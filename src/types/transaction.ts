@@ -4,7 +4,7 @@ export interface Transaction {
   timestamp: string;
   merchant: string;
   category: string;
-  amount: string; // Decimal comes over the wire as a string
+  amount: string;
   currency: string;
   status: "SUCCESS" | "FAILED" | "PENDING";
   payment_method: string;
@@ -53,7 +53,11 @@ export const CATEGORIES = [
   "Other",
 ];
 
-export const STATUSES = ["SUCCESS", "FAILED", "PENDING"] as const;
+export const STATUSES = [
+  "SUCCESS",
+  "FAILED",
+  "PENDING",
+] as const;
 
 export interface CategoryBreakdown {
   category: string;
