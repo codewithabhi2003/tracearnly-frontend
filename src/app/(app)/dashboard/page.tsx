@@ -69,6 +69,20 @@ export default function DashboardPage() {
     );
   }
 
+  /*
+   * The backend returns Decimal values as strings.
+   * Recharts needs numeric values, so convert them here.
+   */
+  const categoryChartData = categories.map((item) => ({
+    ...item,
+    total: Number(item.total),
+  }));
+
+  const monthlyChartData = monthly.map((item) => ({
+    ...item,
+    total: Number(item.total),
+  }));
+
   const kpis = [
     {
       label: "Total Spending",
@@ -79,28 +93,28 @@ export default function DashboardPage() {
     },
     {
       label: "Transactions",
-      value: summary.transaction_count.toLocaleString(),
+      value: summary.transaction_count.toLocaleString("en-IN"),
       icon: "↗",
       description: "Total recorded",
       iconClass: "bg-violet-50 text-violet-600",
     },
     {
       label: "Successful",
-      value: summary.successful_count.toLocaleString(),
+      value: summary.successful_count.toLocaleString("en-IN"),
       icon: "✓",
       description: "Completed payments",
       iconClass: "bg-emerald-50 text-emerald-600",
     },
     {
       label: "Failed",
-      value: summary.failed_count.toLocaleString(),
+      value: summary.failed_count.toLocaleString("en-IN"),
       icon: "!",
       description: "Failed payments",
       iconClass: "bg-red-50 text-red-600",
     },
     {
       label: "Coin Balance",
-      value: summary.coin_balance.toLocaleString(),
+      value: summary.coin_balance.toLocaleString("en-IN"),
       icon: "🪙",
       description: "Available to redeem",
       iconClass: "bg-amber-50 text-amber-600",
@@ -161,6 +175,7 @@ export default function DashboardPage() {
 
             <p className="mt-1 truncate text-xl font-bold tracking-tight text-slate-900">
               {kpi.value}
+
               {kpi.label === "Coin Balance" && (
                 <span className="ml-1 text-sm font-medium text-amber-600">
                   coins
@@ -177,7 +192,7 @@ export default function DashboardPage() {
 
       {/* Main Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Category Chart */}
+        {/* Spending by Category */}
         <Card className="overflow-hidden border-slate-200/80 bg-white shadow-sm">
           <div className="flex items-start justify-between border-b border-slate-100 px-5 py-4">
             <div>
@@ -196,15 +211,27 @@ export default function DashboardPage() {
           </div>
 
           <div className="p-5">
-            {categories.length === 0 ? (
-              <div className="flex h-[280px] items-center justify-center text-sm text-slate-500">
-                No category data available.
+            {categoryChartData.length === 0 ? (
+              <div className="flex h-[280px] items-center justify-center">
+                <div className="text-center">
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-xl">
+                    📊
+                  </div>
+
+                  <p className="mt-3 text-sm font-semibold text-slate-700">
+                    No category data available
+                  </p>
+
+                  <p className="mt-1 text-xs text-slate-400">
+                    Spending data will appear here once available.
+                  </p>
+                </div>
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
                   <Pie
-                    data={categories}
+                    data={categoryChartData}
                     dataKey="total"
                     nameKey="category"
                     cx="50%"
@@ -214,15 +241,17 @@ export default function DashboardPage() {
                     paddingAngle={2}
                     labelLine={false}
                     onClick={(entry) => {
-                      router.push(
-                        `/transactions?category=${encodeURIComponent(
-                          entry.category
-                        )}`
-                      );
+                      if (entry?.category) {
+                        router.push(
+                          `/transactions?category=${encodeURIComponent(
+                            entry.category
+                          )}`
+                        );
+                      }
                     }}
                     cursor="pointer"
                   >
-                    {categories.map((_, index) => (
+                    {categoryChartData.map((_, index) => (
                       <Cell
                         key={index}
                         fill={COLORS[index % COLORS.length]}
@@ -249,7 +278,7 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        {/* Monthly Chart */}
+        {/* Monthly Spending */}
         <Card className="overflow-hidden border-slate-200/80 bg-white shadow-sm">
           <div className="flex items-start justify-between border-b border-slate-100 px-5 py-4">
             <div>
@@ -268,14 +297,26 @@ export default function DashboardPage() {
           </div>
 
           <div className="p-5">
-            {monthly.length === 0 ? (
-              <div className="flex h-[280px] items-center justify-center text-sm text-slate-500">
-                No monthly data available.
+            {monthlyChartData.length === 0 ? (
+              <div className="flex h-[280px] items-center justify-center">
+                <div className="text-center">
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-xl">
+                    📈
+                  </div>
+
+                  <p className="mt-3 text-sm font-semibold text-slate-700">
+                    No monthly data available
+                  </p>
+
+                  <p className="mt-1 text-xs text-slate-400">
+                    Your spending trend will appear here.
+                  </p>
+                </div>
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={280}>
                 <LineChart
-                  data={monthly}
+                  data={monthlyChartData}
                   margin={{
                     top: 10,
                     right: 10,
@@ -303,7 +344,7 @@ export default function DashboardPage() {
                     axisLine={false}
                     tick={{ fill: "#64748b" }}
                     tickFormatter={(value) =>
-                      `₹${Number(value) / 1000}k`
+                      `₹${(Number(value) / 1000).toFixed(0)}k`
                     }
                   />
 
@@ -347,13 +388,15 @@ export default function DashboardPage() {
           <div>
             <div className="mb-2 flex items-center gap-2">
               <span className="text-xl">🪙</span>
+
               <span className="text-xs font-semibold uppercase tracking-wider text-brand-200">
                 Rewards balance
               </span>
             </div>
 
             <p className="text-3xl font-bold tracking-tight">
-              {summary.coin_balance.toLocaleString()}
+              {summary.coin_balance.toLocaleString("en-IN")}
+
               <span className="ml-2 text-base font-medium text-slate-300">
                 coins
               </span>
