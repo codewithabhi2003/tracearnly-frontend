@@ -9,35 +9,96 @@ interface Props {
   onLimitChange: (limit: number) => void;
 }
 
-export function Pagination({ pagination, onPageChange, onLimitChange }: Props) {
-  const { page, limit, total, total_pages, has_next, has_prev } = pagination;
-  const start = total === 0 ? 0 : (page - 1) * limit + 1;
+export function Pagination({
+  pagination,
+  onPageChange,
+  onLimitChange,
+}: Props) {
+  const {
+    page,
+    limit,
+    total,
+    total_pages,
+    has_next,
+    has_prev,
+  } = pagination;
+
+  const start =
+    total === 0 ? 0 : (page - 1) * limit + 1;
+
   const end = Math.min(page * limit, total);
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-slate-200">
-      <p className="text-sm text-slate-600">
-        Showing {start}–{end} of {total.toLocaleString()} transactions
-      </p>
-      <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-4 border-t border-slate-200 bg-white px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+      {/* Results */}
+      <div className="text-sm text-slate-500">
+        {total === 0 ? (
+          <span>No transactions found</span>
+        ) : (
+          <>
+            Showing{" "}
+            <span className="font-semibold text-slate-700">
+              {start.toLocaleString("en-IN")}
+            </span>
+            {"–"}
+            <span className="font-semibold text-slate-700">
+              {end.toLocaleString("en-IN")}
+            </span>
+            {" of "}
+            <span className="font-semibold text-slate-700">
+              {total.toLocaleString("en-IN")}
+            </span>{" "}
+            transactions
+          </>
+        )}
+      </div>
+
+      {/* Controls */}
+      <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
         <select
           value={limit}
-          onChange={(e) => onLimitChange(Number(e.target.value))}
-          className="border border-slate-300 rounded-md text-sm px-2 py-1"
+          onChange={(event) =>
+            onLimitChange(Number(event.target.value))
+          }
+          aria-label="Transactions per page"
+          className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
         >
-          {[25, 50, 100].map((n) => (
-            <option key={n} value={n}>
-              {n} / page
+          {[25, 50, 100].map((value) => (
+            <option key={value} value={value}>
+              {value} / page
             </option>
           ))}
         </select>
-        <Button variant="secondary" disabled={!has_prev} onClick={() => onPageChange(page - 1)}>
+
+        <Button
+          variant="secondary"
+          disabled={!has_prev}
+          onClick={() => onPageChange(page - 1)}
+          className="h-9 rounded-lg px-3"
+        >
           ← Prev
         </Button>
-        <span className="text-sm text-slate-600 px-2">
-          Page {page} of {total_pages || 1}
-        </span>
-        <Button variant="secondary" disabled={!has_next} onClick={() => onPageChange(page + 1)}>
+
+        <div className="flex h-9 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-600">
+          <span className="text-slate-900">
+            {page}
+          </span>
+
+          <span className="mx-1 text-slate-400">
+            /
+          </span>
+
+          <span>
+            {total_pages || 1}
+          </span>
+        </div>
+
+        <Button
+          variant="secondary"
+          disabled={!has_next}
+          onClick={() => onPageChange(page + 1)}
+          className="h-9 rounded-lg px-3"
+        >
           Next →
         </Button>
       </div>
