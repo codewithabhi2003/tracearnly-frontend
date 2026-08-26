@@ -103,40 +103,31 @@ frontend/
 │   │   └── formatters.ts
 │   │
 │   └── types/
-│       ├── auth.ts
 │       ├── reward.ts
 │       └── transaction.ts
 │
 └── README.md
 ```
 
----
-
 ## Application Structure
 
-### App Routes
-
 The application uses the Next.js App Router.
+
+### App Routes
 
 | Route | Description |
 |---|---|
 | `/` | Landing page |
-| `/dashboard` | Dashboard |
+| `/dashboard` | Spending and rewards overview |
 | `/transactions` | Transaction management |
 | `/analytics` | Spending analytics |
 | `/rewards` | Rewards and redemption |
 
-The application pages are grouped under:
-
-```text
-src/app/(app)/
-```
-
----
+The main application pages are grouped under `src/app/(app)/`.
 
 ## Dashboard
 
-The dashboard provides an overview of spending activity.
+The dashboard provides an overview of spending and rewards activity.
 
 It includes:
 
@@ -149,7 +140,7 @@ It includes:
 - Monthly spending trend
 - Recent transactions
 
----
+The dashboard also provides quick navigation to the complete transaction list.
 
 ## Transactions
 
@@ -160,34 +151,31 @@ The transaction page provides a complete interface for exploring transaction dat
 - Merchant search
 - Category filtering
 - Status filtering
-- Date filtering
-- Amount filtering
+- Date range filtering
+- Amount range filtering
 - Sorting by date
 - Sorting by amount
-- Pagination
-- Transaction details
+- Server-side pagination
+- Transaction detail view
+- Chart-to-transaction filtering
 
 Clicking a transaction opens a detailed transaction modal.
 
 ### Transaction Components
 
-```text
-components/transactions/
-```
+`components/transactions/`
 
 | Component | Purpose |
 |---|---|
-| `TransactionTable` | Displays transaction records |
-| `TransactionFilters` | Search and filter controls |
-| `TransactionDetail` | Transaction detail modal |
-| `Pagination` | Transaction pagination |
-| `SortHeader` | Table sorting controls |
-
----
+| `TransactionTable.tsx` | Displays transaction records |
+| `TransactionFilters.tsx` | Search and filtering controls |
+| `TransactionDetail.tsx` | Transaction detail modal |
+| `Pagination.tsx` | Pagination controls |
+| `SortHeader.tsx` | Table sorting controls |
 
 ## Analytics
 
-The analytics page provides visual spending insights.
+The analytics page provides visual insights into spending activity.
 
 It includes:
 
@@ -197,16 +185,25 @@ It includes:
 - Top merchant
 - Total transactions analyzed
 
-Charts are implemented using **Recharts**.
+Charts are implemented using Recharts.
 
----
+### Category Analytics
+
+The category chart displays spending grouped by transaction category. Selecting a category allows the user to navigate to the transaction list filtered by that category.
+
+### Monthly Analytics
+
+The monthly chart displays spending trends over time, making it easier to understand changes in spending activity.
 
 ## Rewards
 
-The rewards page provides:
+The rewards page provides a complete coin-based rewards experience.
+
+It includes:
 
 - Available rewards
 - Current coin balance
+- Reward costs
 - Reward redemption
 - Redemption confirmation
 - Redemption success state
@@ -215,24 +212,42 @@ The rewards page provides:
 
 ### Reward Components
 
-```text
-components/rewards/
-```
+`components/rewards/`
 
 | Component | Purpose |
 |---|---|
-| `RewardCard` | Displays an individual reward |
-| `RedeemModal` | Handles reward redemption confirmation and states |
+| `RewardCard.tsx` | Displays an individual reward |
+| `RedeemModal.tsx` | Handles redemption confirmation and result states |
 
----
+### Redemption Flow
+
+```text
+Select Reward
+     │
+     ▼
+Confirm Redemption
+     │
+     ▼
+Backend Validation
+     │
+     ├── Success
+     │     │
+     │     ▼
+     │  Updated Balance
+     │
+     └── Failure
+           │
+           ▼
+       Error State
+```
+
+The frontend only updates the displayed balance after a successful redemption response.
 
 ## Layout Components
 
-The application layout is managed through reusable layout components.
+The main application layout uses reusable navigation and header components.
 
-```text
-components/layout/
-```
+`components/layout/`
 
 | Component | Purpose |
 |---|---|
@@ -240,17 +255,11 @@ components/layout/
 | `TopBar.tsx` | Application header and mobile navigation |
 | `CoinBalance.tsx` | Displays the current coin balance |
 
-The layout is responsive and adapts the navigation experience for smaller screens.
-
----
+The layout is responsive and provides navigation controls for both desktop and mobile screens.
 
 ## UI Components
 
-Reusable UI components are located under:
-
-```text
-components/ui/
-```
+Reusable UI components are located under `components/ui/`.
 
 | Component | Purpose |
 |---|---|
@@ -262,105 +271,69 @@ components/ui/
 | `Modal.tsx` | Modal dialogs |
 | `Spinner.tsx` | Loading indicators |
 
-These components are shared throughout the application to maintain consistent styling and behavior.
-
----
+These components provide consistent styling and interaction patterns throughout the application.
 
 ## Hooks
 
-Application data fetching is separated into reusable React hooks.
+Application data fetching and state management for API-driven features are separated into reusable React hooks.
 
-### `useTransactions`
+### useTransactions
 
-Handles transaction API requests and supports dynamic filters.
+`src/hooks/useTransactions.ts`
 
-```text
-src/hooks/useTransactions.ts
-```
-
-Responsibilities include:
+Handles:
 
 - Fetching transactions
-- Applying filters
+- Search
+- Filtering
 - Pagination
 - Sorting
 - Loading state
 - Error handling
 - Refetching transaction data
 
-### `useAnalytics`
+### useAnalytics
 
-Loads analytics data.
+`src/hooks/useAnalytics.ts`
 
-```text
-src/hooks/useAnalytics.ts
-```
+Handles:
 
-Provides:
-
-- Category breakdown
-- Monthly trends
+- Category analytics
+- Monthly spending trends
 - Summary information
 - Loading state
 
-### `useRewards`
+### useRewards
 
-Handles reward-related data and operations.
+`src/hooks/useRewards.ts`
 
-```text
-src/hooks/useRewards.ts
-```
-
-Provides:
+Handles:
 
 - Reward catalogue
 - Coin balance
 - Redemption history
 - Reward redemption
+- Balance updates
 - Refetching reward data
 - Loading state
 
----
-
 ## API Integration
 
-API communication is handled through Axios.
+API communication is handled through Axios, defined in `src/lib/api.ts`.
 
-```text
-src/lib/api.ts
-```
-
-The API base URL is configured using:
-
-```text
-NEXT_PUBLIC_API_URL
-```
-
-### Local Development
+The API base URL is configured using the `NEXT_PUBLIC_API_URL` environment variable, for example:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
-```
-
-### Production
-
-```env
-NEXT_PUBLIC_API_URL=https://tracearnly-backend.onrender.com
 ```
 
 The Axios client uses the configured backend URL for API requests.
 
 The frontend does not directly access the database. All application data is retrieved through the backend API.
 
----
-
 ## Formatting Utilities
 
-Common formatting functions are located in:
-
-```text
-src/lib/formatters.ts
-```
+Common formatting utilities are located under `src/lib/formatters.ts`.
 
 They handle:
 
@@ -371,23 +344,13 @@ They handle:
 
 Currency is formatted using INR.
 
-Example:
-
-```text
-₹1,000.00
-```
-
----
+Example: `₹1,000.00`
 
 ## Type Definitions
 
-TypeScript interfaces are organized under:
+TypeScript interfaces are organized under `src/types/`.
 
-```text
-src/types/
-```
-
-### `transaction.ts`
+### transaction.ts
 
 Contains types for:
 
@@ -398,19 +361,13 @@ Contains types for:
 - Monthly analytics
 - Dashboard summary
 
-### `reward.ts`
+### reward.ts
 
 Contains types for:
 
 - Rewards
 - Redemption responses
 - Redemption history
-
-### `auth.ts`
-
-Contains user and token-related type definitions used by the frontend structure.
-
----
 
 ## Responsive Design
 
@@ -422,83 +379,63 @@ The application is designed to work across:
 
 ### Desktop
 
-The desktop application uses a sidebar navigation.
+The desktop interface uses a persistent sidebar for navigation.
 
 ### Mobile
 
-Smaller screens use the mobile top navigation and menu controls.
+On smaller screens, the sidebar is replaced by mobile navigation controls accessible from the top bar.
 
-### Transactions
+### Transaction Table
 
-The transaction table uses horizontal scrolling where necessary to preserve the complete dataset without breaking the layout.
-
----
+The transaction table is designed to preserve all important columns while remaining usable on smaller screens. Horizontal scrolling is used where necessary instead of hiding transaction information.
 
 ## Environment Variables
 
 Create a `.env.local` file in the frontend root directory.
 
-### Local Development
+Example:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-### Production
-
-```env
-NEXT_PUBLIC_API_URL=https://tracearnly-backend.onrender.com
-```
+### Variables
 
 | Variable | Description |
 |---|---|
 | `NEXT_PUBLIC_API_URL` | Backend API base URL |
 
-Environment variables beginning with `NEXT_PUBLIC_` are intentionally available to browser-side code because the frontend needs the backend API URL.
+`NEXT_PUBLIC_API_URL` is intentionally public because the frontend browser needs the backend API address.
 
-Do not place private secrets in `NEXT_PUBLIC_` variables.
-
----
+No private credentials or secrets should be stored in `NEXT_PUBLIC_` variables.
 
 ## Installation
 
-### 1. Install Dependencies
+### 1. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 2. Configure Environment Variables
+### 2. Configure environment variables
 
-Create:
-
-```text
-.env.local
-```
-
-Add:
+Create a `.env.local` file:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-### 3. Start the Development Server
+### 3. Start the development server
 
 ```bash
 npm run dev
 ```
 
-The frontend will be available at:
-
-```text
-http://localhost:3000
-```
-
----
+The frontend will be available at `http://localhost:3000`.
 
 ## Production Build
 
-Create a production build:
+Create an optimized production build:
 
 ```bash
 npm run build
@@ -510,8 +447,6 @@ Start the production server:
 npm start
 ```
 
----
-
 ## Development Scripts
 
 | Command | Description |
@@ -521,29 +456,13 @@ npm start
 | `npm start` | Starts the production server |
 | `npm run lint` | Runs the configured linting checks |
 
----
-
 ## Backend Connection
 
 The frontend communicates with the TracEarnly backend through the configured API URL.
 
-### Local
+Local backend: `http://localhost:8000`
 
-```text
-http://localhost:8000
-```
-
-### Production
-
-```text
-https://tracearnly-backend.onrender.com
-```
-
-The frontend does not directly access the database.
-
-All application data is retrieved through the backend API.
-
----
+The frontend does not directly access PostgreSQL. All application data is retrieved through the backend API.
 
 ## Application Flow
 
@@ -578,6 +497,19 @@ Transaction Table
 Transaction Detail
 ```
 
+### Analytics
+
+```text
+Analytics Page
+      │
+      ▼
+useAnalytics
+      │
+      ├── Category Breakdown
+      ├── Monthly Trend
+      └── Summary
+```
+
 ### Rewards
 
 ```text
@@ -587,7 +519,7 @@ Rewards Page
 useRewards
      │
      ├── Rewards
-     ├── Balance
+     ├── Coin Balance
      └── Redemption History
              │
              ▼
@@ -597,34 +529,21 @@ useRewards
         Redeem API
 ```
 
----
+## Backend API Dependency
 
-## Deployment
+The frontend expects the backend to provide APIs for:
 
-The frontend can be deployed to any platform that supports Next.js.
+| API Area | Purpose |
+|---|---|
+| Transactions | Fetch, filter, sort and paginate transactions |
+| Analytics | Category, monthly and summary analytics |
+| Rewards | Reward catalogue |
+| Balance | Current coin balance |
+| Redemption | Redeem a selected reward |
+| Redemption History | Previously completed redemptions |
 
-Before deployment, configure:
-
-```env
-NEXT_PUBLIC_API_URL=https://tracearnly-backend.onrender.com
-```
-
-The production build can then be generated using:
-
-```bash
-npm run build
-```
-
----
-
-## Production URL
-
-```text
-https://tracearnly-frontend-coral.vercel.app
-```
-
----
+The frontend communicates with these endpoints through the Axios client defined in `src/lib/api.ts`.
 
 ## License
 
-TracEarnly
+No license has been specified for this project yet. Add a `LICENSE` file (for example, MIT or Apache 2.0) if this repository will be made public or open-sourced.
