@@ -1,12 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useTransactions } from "@/hooks/useTransactions";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
-import { formatCurrency, formatDate, STATUS_COLORS } from "@/lib/formatters";
+import {
+  formatCurrency,
+  formatDate,
+  STATUS_COLORS,
+} from "@/lib/formatters";
+
 import {
   PieChart,
   Pie,
@@ -20,102 +26,421 @@ import {
   CartesianGrid,
 } from "recharts";
 
-const COLORS = ["#0ea5e9", "#f59e0b", "#8b5cf6", "#ef4444", "#10b981", "#6366f1", "#ec4899", "#f97316", "#14b8a6", "#64748b", "#94a3b8"];
+const COLORS = [
+  "#0ea5e9",
+  "#8b5cf6",
+  "#f59e0b",
+  "#10b981",
+  "#ef4444",
+  "#6366f1",
+  "#ec4899",
+  "#f97316",
+  "#14b8a6",
+  "#64748b",
+  "#94a3b8",
+];
 
 export default function DashboardPage() {
-  const { categories, monthly, summary, loading } = useAnalytics();
-  const { data: recentData } = useTransactions({ limit: 5, sort_by: "timestamp", sort_order: "desc" });
+  const router = useRouter();
+
+  const {
+    categories,
+    monthly,
+    summary,
+    loading,
+  } = useAnalytics();
+
+  const { data: recentData } = useTransactions({
+    limit: 5,
+    sort_by: "timestamp",
+    sort_order: "desc",
+  });
 
   if (loading || !summary) {
     return (
-      <div className="flex justify-center py-20">
-        <Spinner className="h-8 w-8" />
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Spinner className="h-8 w-8" />
+          <p className="text-sm text-slate-500">
+            Loading your dashboard...
+          </p>
+        </div>
       </div>
     );
   }
 
   const kpis = [
-    { label: "Total Spending", value: formatCurrency(summary.total_spending) },
-    { label: "Transactions", value: summary.transaction_count.toLocaleString() },
-    { label: "Successful", value: summary.successful_count.toLocaleString() },
-    { label: "Failed", value: summary.failed_count.toLocaleString() },
-    { label: "Coin Balance", value: `🪙 ${summary.coin_balance.toLocaleString()}` },
+    {
+      label: "Total Spending",
+      value: formatCurrency(summary.total_spending),
+      icon: "₹",
+      description: "Across all transactions",
+      iconClass: "bg-blue-50 text-blue-600",
+    },
+    {
+      label: "Transactions",
+      value: summary.transaction_count.toLocaleString(),
+      icon: "↗",
+      description: "Total recorded",
+      iconClass: "bg-violet-50 text-violet-600",
+    },
+    {
+      label: "Successful",
+      value: summary.successful_count.toLocaleString(),
+      icon: "✓",
+      description: "Completed payments",
+      iconClass: "bg-emerald-50 text-emerald-600",
+    },
+    {
+      label: "Failed",
+      value: summary.failed_count.toLocaleString(),
+      icon: "!",
+      description: "Failed payments",
+      iconClass: "bg-red-50 text-red-600",
+    },
+    {
+      label: "Coin Balance",
+      value: summary.coin_balance.toLocaleString(),
+      icon: "🪙",
+      description: "Available to redeem",
+      iconClass: "bg-amber-50 text-amber-600",
+    },
   ];
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="mb-1 text-sm font-medium text-brand-600">
+            Overview
+          </p>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        {kpis.map((k) => (
-          <Card key={k.label} className="p-4">
-            <p className="text-xs text-slate-500 mb-1">{k.label}</p>
-            <p className="text-lg font-semibold">{k.value}</p>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+            Dashboard
+          </h1>
+
+          <p className="mt-1 text-sm text-slate-500">
+            Here's a quick look at your spending and rewards.
+          </p>
+        </div>
+
+        <Link
+          href="/transactions"
+          className="inline-flex w-fit items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+        >
+          View transactions
+          <span>→</span>
+        </Link>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        {kpis.map((kpi) => (
+          <Card
+            key={kpi.label}
+            className="group relative overflow-hidden border-slate-200/80 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
+          >
+            <div className="flex items-start justify-between">
+              <div
+                className={`flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold ${kpi.iconClass}`}
+              >
+                {kpi.icon}
+              </div>
+
+              {kpi.label === "Coin Balance" && (
+                <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+                  Rewards
+                </span>
+              )}
+            </div>
+
+            <p className="mt-5 text-xs font-medium text-slate-500">
+              {kpi.label}
+            </p>
+
+            <p className="mt-1 truncate text-xl font-bold tracking-tight text-slate-900">
+              {kpi.value}
+              {kpi.label === "Coin Balance" && (
+                <span className="ml-1 text-sm font-medium text-amber-600">
+                  coins
+                </span>
+              )}
+            </p>
+
+            <p className="mt-1 text-xs text-slate-400">
+              {kpi.description}
+            </p>
           </Card>
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        <Card className="p-4">
-          <h2 className="font-semibold mb-4">Spending by Category</h2>
-          <ResponsiveContainer width="100%" height={280}>
-            <PieChart>
-              <Pie
-                data={categories}
-                dataKey="total"
-                nameKey="category"
-                cx="50%"
-                cy="50%"
-                outerRadius={90}
-                label={(entry) => entry.category}
-                onClick={(entry) => {
-                  window.location.href = `/transactions?category=${encodeURIComponent(entry.category)}`;
-                }}
-                cursor="pointer"
-              >
-                {categories.map((_, i) => (
-                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(v: number) => formatCurrency(v)} />
-            </PieChart>
-          </ResponsiveContainer>
+      {/* Main Charts */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Category Chart */}
+        <Card className="overflow-hidden border-slate-200/80 bg-white shadow-sm">
+          <div className="flex items-start justify-between border-b border-slate-100 px-5 py-4">
+            <div>
+              <h2 className="font-semibold text-slate-900">
+                Spending by Category
+              </h2>
+
+              <p className="mt-1 text-xs text-slate-500">
+                Where your money is going
+              </p>
+            </div>
+
+            <span className="rounded-lg bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-500">
+              All time
+            </span>
+          </div>
+
+          <div className="p-5">
+            {categories.length === 0 ? (
+              <div className="flex h-[280px] items-center justify-center text-sm text-slate-500">
+                No category data available.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie
+                    data={categories}
+                    dataKey="total"
+                    nameKey="category"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={58}
+                    outerRadius={92}
+                    paddingAngle={2}
+                    labelLine={false}
+                    onClick={(entry) => {
+                      router.push(
+                        `/transactions?category=${encodeURIComponent(
+                          entry.category
+                        )}`
+                      );
+                    }}
+                    cursor="pointer"
+                  >
+                    {categories.map((_, index) => (
+                      <Cell
+                        key={index}
+                        fill={COLORS[index % COLORS.length]}
+                        stroke="white"
+                        strokeWidth={2}
+                      />
+                    ))}
+                  </Pie>
+
+                  <Tooltip
+                    formatter={(value) =>
+                      formatCurrency(String(value))
+                    }
+                    contentStyle={{
+                      borderRadius: "12px",
+                      border: "1px solid #e2e8f0",
+                      boxShadow:
+                        "0 10px 30px rgba(15, 23, 42, 0.08)",
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
         </Card>
 
-        <Card className="p-4">
-          <h2 className="font-semibold mb-4">Monthly Trend</h2>
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={monthly}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" fontSize={12} />
-              <YAxis fontSize={12} />
-              <Tooltip formatter={(v: number) => formatCurrency(v)} />
-              <Line type="monotone" dataKey="total" stroke="#0ea5e9" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
+        {/* Monthly Chart */}
+        <Card className="overflow-hidden border-slate-200/80 bg-white shadow-sm">
+          <div className="flex items-start justify-between border-b border-slate-100 px-5 py-4">
+            <div>
+              <h2 className="font-semibold text-slate-900">
+                Monthly Spending
+              </h2>
+
+              <p className="mt-1 text-xs text-slate-500">
+                Your spending trend over time
+              </p>
+            </div>
+
+            <span className="rounded-lg bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-700">
+              Trend
+            </span>
+          </div>
+
+          <div className="p-5">
+            {monthly.length === 0 ? (
+              <div className="flex h-[280px] items-center justify-center text-sm text-slate-500">
+                No monthly data available.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={280}>
+                <LineChart
+                  data={monthly}
+                  margin={{
+                    top: 10,
+                    right: 10,
+                    left: -15,
+                    bottom: 0,
+                  }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="#e2e8f0"
+                    vertical={false}
+                  />
+
+                  <XAxis
+                    dataKey="month"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fill: "#64748b" }}
+                  />
+
+                  <YAxis
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fill: "#64748b" }}
+                    tickFormatter={(value) =>
+                      `₹${Number(value) / 1000}k`
+                    }
+                  />
+
+                  <Tooltip
+                    formatter={(value) =>
+                      formatCurrency(String(value))
+                    }
+                    contentStyle={{
+                      borderRadius: "12px",
+                      border: "1px solid #e2e8f0",
+                      boxShadow:
+                        "0 10px 30px rgba(15, 23, 42, 0.08)",
+                    }}
+                  />
+
+                  <Line
+                    type="monotone"
+                    dataKey="total"
+                    stroke="#0ea5e9"
+                    strokeWidth={3}
+                    dot={{
+                      r: 3,
+                      strokeWidth: 2,
+                      fill: "#ffffff",
+                    }}
+                    activeDot={{
+                      r: 6,
+                      strokeWidth: 2,
+                    }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
         </Card>
       </div>
 
-      <Card className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold">Recent Transactions</h2>
-          <Link href="/transactions" className="text-sm text-brand-600 font-medium">
+      {/* Reward Highlight */}
+      <Card className="overflow-hidden border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-brand-900 p-0 text-white shadow-lg">
+        <div className="flex flex-col justify-between gap-6 p-6 sm:flex-row sm:items-center sm:p-7">
+          <div>
+            <div className="mb-2 flex items-center gap-2">
+              <span className="text-xl">🪙</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-brand-200">
+                Rewards balance
+              </span>
+            </div>
+
+            <p className="text-3xl font-bold tracking-tight">
+              {summary.coin_balance.toLocaleString()}
+              <span className="ml-2 text-base font-medium text-slate-300">
+                coins
+              </span>
+            </p>
+
+            <p className="mt-1 text-sm text-slate-400">
+              You have coins ready to redeem for rewards.
+            </p>
+          </div>
+
+          <Link
+            href="/rewards"
+            className="inline-flex w-fit items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-100"
+          >
+            Explore Rewards
+            <span>→</span>
+          </Link>
+        </div>
+      </Card>
+
+      {/* Recent Transactions */}
+      <Card className="overflow-hidden border-slate-200/80 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+          <div>
+            <h2 className="font-semibold text-slate-900">
+              Recent Transactions
+            </h2>
+
+            <p className="mt-1 text-xs text-slate-500">
+              Your latest payment activity
+            </p>
+          </div>
+
+          <Link
+            href="/transactions"
+            className="text-sm font-semibold text-brand-600 transition hover:text-brand-700"
+          >
             View all →
           </Link>
         </div>
-        <div className="space-y-2">
-          {recentData?.data.map((t) => (
-            <div key={t.id} className="flex items-center justify-between py-2 border-b last:border-0 border-slate-100">
-              <div>
-                <p className="text-sm font-medium">{t.merchant}</p>
-                <p className="text-xs text-slate-500">{t.category} · {formatDate(t.timestamp)}</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Badge className={STATUS_COLORS[t.status]}>{t.status}</Badge>
-                <span className="text-sm font-medium w-24 text-right">{formatCurrency(t.amount)}</span>
-              </div>
+
+        <div className="divide-y divide-slate-100">
+          {!recentData?.data.length ? (
+            <div className="px-5 py-10 text-center text-sm text-slate-500">
+              No transactions found.
             </div>
-          ))}
+          ) : (
+            recentData.data.map((transaction) => (
+              <div
+                key={transaction.id}
+                className="flex flex-col gap-3 px-5 py-4 transition hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-sm font-bold text-slate-600">
+                    {transaction.merchant
+                      .charAt(0)
+                      .toUpperCase()}
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-slate-900">
+                      {transaction.merchant}
+                    </p>
+
+                    <p className="mt-0.5 truncate text-xs text-slate-500">
+                      {transaction.category} ·{" "}
+                      {formatDate(transaction.timestamp)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-4 sm:justify-end">
+                  <Badge
+                    className={
+                      STATUS_COLORS[transaction.status]
+                    }
+                  >
+                    {transaction.status}
+                  </Badge>
+
+                  <span className="w-24 text-right text-sm font-bold text-slate-900">
+                    {formatCurrency(transaction.amount)}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </Card>
     </div>
