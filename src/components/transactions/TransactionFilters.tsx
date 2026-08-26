@@ -36,15 +36,15 @@ export function TransactionFiltersBar({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-        <div>
-          <h2 className="font-semibold text-slate-900">
+      <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-4 sm:px-5">
+        <div className="min-w-0">
+          <h2 className="text-sm font-semibold text-slate-900 sm:text-base">
             Filter Transactions
           </h2>
 
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 hidden text-xs text-slate-500 sm:block">
             Search and narrow down your transaction history.
           </p>
         </div>
@@ -52,14 +52,14 @@ export function TransactionFiltersBar({
         <button
           type="button"
           onClick={clearAll}
-          className="text-sm font-semibold text-brand-600 transition hover:text-brand-700"
+          className="shrink-0 text-xs font-semibold text-brand-600 transition hover:text-brand-700 sm:text-sm"
         >
           Reset filters
         </button>
       </div>
 
       {/* Filters */}
-      <div className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 p-4 sm:grid-cols-2 sm:gap-4 sm:p-5 lg:grid-cols-4">
         {/* Search */}
         <div className="sm:col-span-2">
           <Input
@@ -112,7 +112,7 @@ export function TransactionFiltersBar({
           ))}
         </Select>
 
-        {/* Date range */}
+        {/* Dates */}
         <Input
           label="Date from"
           type="date"
@@ -135,7 +135,7 @@ export function TransactionFiltersBar({
           }
         />
 
-        {/* Amount range */}
+        {/* Amount */}
         <div className="sm:col-span-2">
           <div className="grid grid-cols-2 gap-3">
             <Input
@@ -166,8 +166,8 @@ export function TransactionFiltersBar({
           </div>
         </div>
 
-        {/* Clear button */}
-        <div className="flex items-end">
+        {/* Clear */}
+        <div className="sm:col-span-2 lg:col-span-1">
           <Button
             variant="secondary"
             onClick={clearAll}
