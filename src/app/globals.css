@@ -2,168 +2,78 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ================================
-   Base Theme
-================================ */
-
-:root {
-  color-scheme: dark;
+body {
+  background-color: #f8fafc;
+  color: #0f172a;
 }
 
+/* Smooth scrolling */
 html {
-  background: #020617;
   scroll-behavior: smooth;
 }
 
-body {
-  min-height: 100vh;
-  margin: 0;
-  background:
-    radial-gradient(
-      circle at top left,
-      rgba(14, 165, 233, 0.08),
-      transparent 30%
-    ),
-    radial-gradient(
-      circle at top right,
-      rgba(99, 102, 241, 0.06),
-      transparent 28%
-    ),
-    #020617;
-  color: #f8fafc;
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+/* Better rendering */
+* {
+  box-sizing: border-box;
 }
 
-/* ================================
-   Selection
-================================ */
-
+/* Selection */
 ::selection {
-  background: rgba(14, 165, 233, 0.3);
-  color: #ffffff;
+  background-color: #dbeafe;
+  color: #0f172a;
 }
 
-/* ================================
-   Scrollbar
-================================ */
+/* Smooth transitions for interactive elements */
+button,
+a,
+input,
+select,
+textarea {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
 
+/* Remove default button movement on disabled elements */
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Better focus visibility */
+:focus-visible {
+  outline: 2px solid #0ea5e9;
+  outline-offset: 2px;
+}
+
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #020617;
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #cbd5e1;
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #94a3b8;
 }
 
-/* Firefox */
-
+/* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #334155 #020617;
+  scrollbar-color: #cbd5e1 #f1f5f9;
 }
 
-/* ================================
-   Form Elements
-================================ */
-
-input,
-textarea,
-select {
-  color-scheme: dark;
-}
-
-input::placeholder,
-textarea::placeholder {
-  color: #64748b;
-}
-
-/* ================================
-   Focus
-================================ */
-
-:focus-visible {
-  outline: 2px solid #38bdf8;
-  outline-offset: 2px;
-}
-
-/* ================================
-   Links
-================================ */
-
-a {
-  transition:
-    color 180ms ease,
-    background-color 180ms ease,
-    border-color 180ms ease,
-    opacity 180ms ease;
-}
-
-/* ================================
-   Buttons
-================================ */
-
-button {
-  transition:
-    transform 180ms ease,
-    opacity 180ms ease,
-    background-color 180ms ease,
-    border-color 180ms ease,
-    box-shadow 180ms ease;
-}
-
-button:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-button:disabled {
-  cursor: not-allowed;
-}
-
-/* ================================
-   Cards / Surfaces
-================================ */
-
-@layer components {
-  .surface {
-    @apply rounded-2xl border border-slate-800 bg-slate-900/80;
-  }
-
-  .surface-hover {
-    @apply transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-700 hover:bg-slate-900 hover:shadow-xl hover:shadow-black/20;
-  }
-
-  .text-muted {
-    @apply text-slate-400;
-  }
-
-  .text-subtle {
-    @apply text-slate-500;
-  }
-}
-
-/* ================================
-   Framer Motion Friendly Defaults
-================================ */
-
-.motion-safe {
-  will-change: transform, opacity;
-}
-
+/* Respect reduced-motion accessibility settings */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -176,71 +86,5 @@ button:disabled {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
-  }
-}
-
-/* ================================
-   Smooth Page Appearance
-================================ */
-
-@keyframes pageFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.page-enter {
-  animation: pageFadeIn 0.35s ease-out both;
-}
-
-/* ================================
-   Loading Shimmer
-================================ */
-
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-
-  100% {
-    background-position: 1000px 0;
-  }
-}
-
-.shimmer {
-  background: linear-gradient(
-    90deg,
-    #0f172a 25%,
-    #1e293b 50%,
-    #0f172a 75%
-  );
-  background-size: 1000px 100%;
-  animation: shimmer 1.8s infinite linear;
-}
-
-/* ================================
-   Mobile
-================================ */
-
-@media (max-width: 640px) {
-  body {
-    overflow-x: hidden;
-  }
-}
-
-/* ================================
-   Print
-================================ */
-
-@media print {
-  body {
-    background: #ffffff;
-    color: #000000;
   }
 }
