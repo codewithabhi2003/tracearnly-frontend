@@ -2,7 +2,11 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { api } from "@/lib/api";
-import { Reward, Redemption, RedeemResponse } from "@/types/reward";
+import {
+  Reward,
+  Redemption,
+  RedeemResponse,
+} from "@/types/reward";
 
 export function useRewards() {
   const [rewards, setRewards] = useState<Reward[]>([]);
@@ -12,31 +16,77 @@ export function useRewards() {
 
   const refetch = useCallback(async () => {
     setLoading(true);
+
     try {
-      const [r, b, h] = await Promise.all([
-        api.get<Reward[]>("/api/rewards"),
-        api.get<{ balance: number }>("/api/rewards/balance"),
-        api.get<Redemption[]>("/api/rewards/redemptions"),
-      ]);
-      setRewards(r.data);
-      setBalance(b.data.balance);
-      setRedemptions(h.data);
+      const [rewardsResponse, balanceResponse, historyResponse] =
+        await Promise.all([
+          api.get<Reward[]>("/api/rewards"),
+          api.get<{ balance: number }>("/api/rewards/balance"),
+          api.get<Redemption[]>("/api/rewards/redemptions"),
+        ]);
+
+      setRewards(rewardsResponse.data);
+      setBalance(balanceResponse.data.balance);
+      setRedemptions(historyResponse.data);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    refetch();
-  }, [refetch]);
+    let cancelled = false;
 
-  async function redeem(rewardId: number): Promise<RedeemResponse> {
-    // No optimistic update — balance only updates after a confirmed response.
-    const res = await api.post<RedeemResponse>("/api/rewards/redeem", { reward_id: rewardId });
-    setBalance(res.data.new_balance);
+    async function loadRewards() {
+      try {
+        const [rewardsResponse, balanceResponse, historyResponse] =
+          await Promise.all([
+            api.get<Reward[]>("/api/rewards"),
+            api.get<{ balance: number }>("/api/rewards/balance"),
+            api.get<Redemption[]>("/api/rewards/redemptions"),
+          ]);
+
+        if (cancelled) return;
+
+        setRewards(rewardsResponse.data);
+        setBalance(balanceResponse.data.balance);
+        setRedemptions(historyResponse.data);
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadRewards();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function redeem(
+    rewardId: number
+  ): Promise<RedeemResponse> {
+    const response = await api.post<RedeemResponse>(
+      "/api/rewards/redeem",
+      {
+        reward_id: rewardId,
+      }
+    );
+
+    setBalance(response.data.new_balance);
+
     await refetch();
-    return res.data;
+
+    return response.data;
   }
 
-  return { rewards, balance, redemptions, loading, redeem, refetch };
+  return {
+    rewards,
+    balance,
+    redemptions,
+    loading,
+    redeem,
+    refetch,
+  };
 }

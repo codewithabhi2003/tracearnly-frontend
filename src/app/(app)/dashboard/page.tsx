@@ -61,6 +61,7 @@ export default function DashboardPage() {
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <Spinner className="h-8 w-8" />
+
           <p className="text-sm text-slate-500">
             Loading your dashboard...
           </p>
@@ -135,7 +136,7 @@ export default function DashboardPage() {
           </h1>
 
           <p className="mt-1 text-sm text-slate-500">
-            Here's a quick look at your spending and rewards.
+            Here&apos;s a quick look at your spending and rewards.
           </p>
         </div>
 
